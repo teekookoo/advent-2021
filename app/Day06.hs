@@ -10,7 +10,7 @@ import           Text.Parsec
 -- Inputs
 
 testInput :: IO [Int]
-testInput = pure $ [3,4,3,1,2]
+testInput = pure [3,4,3,1,2]
 
 input :: IO [Int]
 input = parseInput <$> readFile "app/inputs/input06"
@@ -22,25 +22,37 @@ input = parseInput <$> readFile "app/inputs/input06"
 
 -- Solvers
 
+solve :: Int -> [Int] -> Int
+solve d = either error sum . catEithers . map (fmap (+ 1) . descendantsAfter d)
+
 solve1 :: IO ()
-solve1 = print . sum . mapMaybe (liftA (1 +) . descendantsAfter 80)
+solve1 = print . solve 80
   =<< input
   -- =<< testInput
 
 solve2 :: IO ()
-solve2 = print . sum . mapMaybe (liftA (1 +) . descendantsAfter 256)
+solve2 = print . solve 256
   =<< input
   -- =<< testInput
 
 -- Logic
 
-descendantsAfter :: Integral a => Int -> Int -> Maybe a
-descendantsAfter d = flip SM.lookup restrictedCounts
+descendantsAfter :: Integral a => Int -> Int -> Either String a
+descendantsAfter d timer = case SM.lookup timer restrictedCounts of
+  Nothing -> Left $ "Error: invalid timer value: " ++ show timer
+  Just n  -> Right n
   where
-    restrictedCounts = SM.fromList [ (c, counts LM.! i d c) | c <- [0 .. 8] ]
-    counts = LM.fromAscList [ (i n c, f n c) | n <- [0 .. d], c <- [0 .. 8] ]
-    i n c = n * 9 + c
-    f n c
-      | n <= c    = 0
-      | otherwise = 1 + counts LM.! i (n - c - 1) 6
-                      + counts LM.! i (n - c - 1) 8
+    restrictedCounts = SM.fromList [ (t, counts LM.! i d t) | t <- [0 .. 8] ]
+    counts = LM.fromAscList [ (i n t, f n t) | n <- [0 .. d], t <- [0 .. 8] ]
+    i n t = n * 9 + t
+    f n t
+      | n <= t    = 0
+      | otherwise = 1 + counts LM.! i (n - t - 1) 6
+                      + counts LM.! i (n - t - 1) 8
+
+catEithers :: [Either a b] -> Either a [b]
+catEithers = foldr f (Right [])
+  where
+    f (Left  x)  _         = Left x
+    f (Right x) (Right xs) = Right $ x:xs
+    f (Right _) (Left  _ ) = undefined -- impossible due to short circuiting
