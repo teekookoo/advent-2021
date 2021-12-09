@@ -11,7 +11,7 @@ import           Data.Vector.Unboxed (Vector, (!), (!?))
 import qualified Data.Vector.Unboxed as V
 import qualified Data.Vector.Algorithms.Intro as V
 
-data Heightmap = HM (Vector Height) Int Int -- Numbers nx ny
+data Heightmap = HM (Vector Height) Int -- Numbers nx
 type Point = (Int, Int)
 type Basin = IntSet
 type Height = Int
@@ -25,16 +25,15 @@ input :: IO Heightmap
 input = parseInput <$> readFile "app/inputs/input09"
 
 parseInput :: String -> Heightmap
-parseInput s = HM (V.fromList $ concat nums) nx ny
+parseInput s = HM (V.fromList $ concat nums) nx
   where
     nums = map (map digitToInt) $ lines s
     nx = length $ head nums
-    ny = length nums
 
 solve1 :: IO ()
 solve1 = do
   -- hm <- testInput
-  hm@(HM v _ _) <- input
+  hm@(HM v _) <- input
   print . V.sum . V.mapMaybe (fmap (1 +) .  get hm) $ lowPoints hm
 
 solve2 :: IO ()
@@ -49,12 +48,12 @@ solve2 = do
 -- Logic
 
 get :: Heightmap -> Point -> Maybe Height
-get hm@(HM v _ _) = (v !?) . p2i hm <=< validate hm
+get hm@(HM v _) = (v !?) . p2i hm <=< validate hm
 
 validate :: Heightmap -> Point -> Maybe Point
-validate (HM v nx ny) (x, y)
-  | 0 <= x && x < nx && 0 <= y && y < ny = Just (x, y)
-  | otherwise                            = Nothing
+validate (HM v nx) (x, y)
+  | 0 <= x && x < nx = Just (x, y)
+  | otherwise        = Nothing
 
 neighborPoints :: Point -> [Point]
 neighborPoints (x, y) = [(x, y-1), (x, y+1), (x-1, y), (x+1, y)]
@@ -63,7 +62,7 @@ neighbors :: Heightmap -> Point -> [Height]
 neighbors hm = mapMaybe (get hm) . neighborPoints
 
 lowPoints :: Heightmap -> Vector Point
-lowPoints hm@(HM v nx ny) = V.imapMaybe lowPoint v
+lowPoints hm@(HM v nx) = V.imapMaybe lowPoint v
   where
     lowPoint i x
       | all (x <) . neighbors hm $ i2p hm i = Just $ i2p hm i
@@ -71,10 +70,10 @@ lowPoints hm@(HM v nx ny) = V.imapMaybe lowPoint v
 
 
 i2p :: Heightmap -> Index -> Point
-i2p (HM _ nx _) = (`mod` nx) &&& (`div` nx)
+i2p (HM _ nx) = (`mod` nx) &&& (`div` nx)
 
 p2i :: Heightmap -> Point -> Index
-p2i (HM _ nx _) (x, y) = y*nx + x
+p2i (HM _ nx) (x, y) = y*nx + x
 
 basin :: Heightmap -> Point -> IntSet
 basin hm p = go [p] S.empty S.empty
