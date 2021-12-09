@@ -81,7 +81,7 @@ mapping signals = case maybeMapping of Just m -> Right m
       (s6, s09 ) <- pickByIntersectionSize 1 s1 s069
       (s0, [s9]) <- pickByIntersectionSize 3 s4 s09
 
-      -- Construct a mapping form signal to digit
+      -- Construct a mapping from signal to digit
       return . M.fromList $ zip [s0, s1, s2, s3, s4, s5, s6, s7, s8, s9] [0 ..]
       
     -- Helper functions
