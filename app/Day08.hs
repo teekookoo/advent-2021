@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedLists #-}
+
 module Day08 (solve1, solve2) where
 
 import           Data.Char (ord)
@@ -41,15 +43,13 @@ solve1 :: IO ()
 -- solve1 = print . length . filter is1478 . concatMap snd =<< testInput
 solve1 = print . sum . map (V.length . V.filter is1478 . snd) =<< input
   where
-    is1478 s = IS.size s `notElem` [5, 6]
+    is1478 s = IS.size s `notElem` ([5, 6] :: [Int])
 
 solve2 :: IO ()
 -- solve2 = print . sum . map f =<< testInput
 solve2 = print . sum . map f =<< input
   where
-    f (i, o) = either error id $ do
-      m <- mapping i
-      eval m o
+    f (i, o) = either error id $ mapping i >>= \m -> eval m o
 
 -- Logic
 
@@ -57,35 +57,39 @@ eval :: Mapping -> Output -> Either String Int
 eval m = V.foldl' f (Right 0)
   where
     f (Right n) s = case M.lookup s m of
-      Just d  -> Right $ 10*n + d
-      Nothing -> Left $ "Key " ++ show s ++ " not in " ++ show m
-    f l _ = l
+      Just d  -> Right $ d + 10 * n
+      Nothing -> Left  $ "Key " ++ show s ++ " not in " ++ show m
+    shiftl n = 10 * n
 
 mapping :: Input -> Either String Mapping
 mapping signals = case maybeMapping of Just m -> Right m
                                        Nothing -> Left "Failure in mapping"
   where
     maybeMapping = do
-      (s1, rest) <- f 2 signals
-      (s4, rest) <- f 4 rest
-      (s7, rest) <- f 3 rest
-      (s8, rest) <- f 7 rest
+      -- Pick digits recognizable by number of segments
+      (s1, rest) <- pickBySize 2 signals
+      (s4, rest) <- pickBySize 4 rest
+      (s7, rest) <- pickBySize 3 rest
+      (s8, rest) <- pickBySize 7 rest
+
+      -- Split into sets of 5- and 6-segment digits
       let (s069, s235) = S.partition (szEq 6) rest
-      (s3, s25) <- g 2 s1 s235
-      (s5, s2_) <- g 3 s4 s25
-      (s6, s09) <- g 1 s1 s069
-      (s0, s9_) <- g 3 s4 s09
-      let s2 = S.elemAt 0 s2_
-          s9 = S.elemAt 0 s9_
+
+      -- Deduce rest of the digits by intersecting with known digits
+      (s3, s25 ) <- pickByIntersectionSize 2 s1 s235
+      (s5, [s2]) <- pickByIntersectionSize 3 s4 s25
+      (s6, s09 ) <- pickByIntersectionSize 1 s1 s069
+      (s0, [s9]) <- pickByIntersectionSize 3 s4 s09
+
+      -- Construct a mapping form signal to digit
       return . M.fromList $ zip [s0, s1, s2, s3, s4, s5, s6, s7, s8, s9] [0 ..]
       
-    f n s = findAndRemove (szEq n) s
-    g n s s' = findAndRemove (szEq n . IS.intersection s) s'
-    szEq n = (n ==) . IS.size
+    -- Helper functions
+    pickBySize             n   = pickBy (szEq n)
+    pickByIntersectionSize n s = pickBy (szEq n . IS.intersection s)
+    szEq                   n   = (n ==) . IS.size
 
-findAndRemove :: Ord a => (a -> Bool) -> Set a -> Maybe (a, Set a)
-findAndRemove p s = (\e -> (e, S.delete e s)) <$> foldr f Nothing s
-  where
-    f x y
-      | p x       = Just x
-      | otherwise = y
+pickBy :: Ord a => (a -> Bool) -> Set a -> Maybe (a, Set a)
+pickBy p s = (\e -> (e, S.delete e s)) <$> foldr f Nothing s
+  where f x y | p x       = Just x
+              | otherwise = y
