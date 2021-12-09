@@ -51,7 +51,7 @@ get :: Heightmap -> Point -> Maybe Height
 get hm@(HM v _) = (v !?) . p2i hm <=< validate hm
 
 validate :: Heightmap -> Point -> Maybe Point
-validate (HM v nx) (x, y)
+validate (HM _ nx) (x, y)
   | 0 <= x && x < nx = Just (x, y)
   | otherwise        = Nothing
 
