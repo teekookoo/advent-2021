@@ -9,7 +9,8 @@ module Main where
 -- import Day07
 -- import Day08
 -- import Day09
-import Day10
+-- import Day10
+import Day11
 
 main :: IO ()
 main = do
