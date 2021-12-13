@@ -2,23 +2,22 @@
 
 module Day11 (solve1, solve2) where
 
-import Control.Arrow (second)
-import Control.Monad (filterM)
-import Control.Monad.ST (runST)
-import Control.Monad.State.Lazy (State, evalState, state)
-import Data.Char (digitToInt, intToDigit)
-import Data.IntSet (IntSet)
-import Data.List (findIndex)
-import Data.Maybe (fromJust, mapMaybe)
-import Data.Vector.Unboxed (Vector, MVector)
+import Control.Arrow            (second)
+import Control.Monad            (filterM)
+import Control.Monad.ST         (runST)
+import Control.Monad.State.Lazy (evalState, state)
+import Data.Char                (digitToInt, intToDigit)
+import Data.List                (findIndex)
+import Data.Maybe               (fromJust, mapMaybe)
+import Data.Vector.Unboxed      (Vector)
 
 import Input (parseFile', Parser)
 
-import qualified Data.IntSet as S
-import qualified Data.Vector.Unboxed as V
+import qualified Data.IntSet                 as S
+import qualified Data.Vector.Unboxed         as V
 import qualified Data.Vector.Unboxed.Mutable as MV
-import qualified Text.Megaparsec as P
-import qualified Text.Megaparsec.Char as P
+import qualified Text.Megaparsec             as P
+import qualified Text.Megaparsec.Char        as P
 
 
 data Grid = Grid Int (Vector Int)
