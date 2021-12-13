@@ -54,7 +54,7 @@ mkFold :: ((Int -> Int) -> (Int, Int) -> (Int, Int)) -> Int -> Fold
 mkFold f ax = S.map (f (\t -> if t <= ax then t else 2*ax - t))
 
 pretty :: Dots -> String
-pretty ds = unlines [ [ if (x, y) `S.member` ds then '▮' else ' '
+pretty ds = unlines [ [ if (x, y) `S.member` ds then '█' else ' '
                       | x <- [xMin .. xMax] ]
                     | y <- [yMin .. yMax] ]
   where
