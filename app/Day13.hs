@@ -45,8 +45,8 @@ solve1 :: IO ()
 solve1 = print . S.size . uncurry (&) . second head =<< input
 
 solve2 :: IO ()
--- solve2 = putStrLn . pretty . uncurry (foldl' (&)) =<< testInput
-solve2 = putStrLn . pretty . uncurry (foldl' (&)) =<< input
+-- solve2 = putStrLn . pretty . uncurry (foldl' (&)) =<< (putStrLn "" >> testInput)
+solve2 = putStrLn . pretty . uncurry (foldl' (&)) =<< (putStrLn "" >> input)
 
 -- Logic
 
