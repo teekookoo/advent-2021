@@ -10,11 +10,13 @@ module Main where
 -- import Day08
 -- import Day09
 -- import Day10
-import Day11
+-- import Day11
+-- import Day11
+import Day13
 
 main :: IO ()
 main = do
-  putStr "Task 1: "
+  putStrLn "Task 1:"
   solve1
-  putStr "Task 2: "
+  putStrLn "Task 2:"
   solve2
