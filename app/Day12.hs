@@ -65,8 +65,9 @@ numPaths1 from to graph = go S.empty from
   where
     go seen v
       | v == to = Just 1
-      | otherwise = fmap sum . mapM (go seen') . filter (`S.notMember` seen) =<< M.lookup v graph
+      | otherwise = fmap sum . mapM (go seen') =<< nbs v seen
       where
+        nbs v seen = filter (`S.notMember` seen) <$> M.lookup v graph
         seen' = case v of
           (Big _)   -> seen
           (Small _) -> S.insert v seen
