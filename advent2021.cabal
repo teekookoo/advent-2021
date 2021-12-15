@@ -41,6 +41,7 @@ executable advent2021
                 , megaparsec        ^>= 9.2.0
                 , mtl               ^>= 2.2.2
                 , parsec            ^>= 3.1.15.0
+                , PSQueue           ^>= 1.1.0.1
                 , text              ^>= 1.2.5.0
                 , vector            ^>= 0.12.3.1
                 , vector-algorithms ^>= 0.8.0.4
