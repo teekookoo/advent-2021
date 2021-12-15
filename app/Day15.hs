@@ -5,6 +5,7 @@ module Day15 (solve1, solve2) where
 import Control.Arrow (first)
 import Control.Monad (when)
 import Data.Char     (digitToInt)
+import Data.Functor  (($>))
 import Data.PSQueue  (PSQ, Binding (..))
 
 import Input (Parser, parseFile')
@@ -35,13 +36,8 @@ parser tx ty = toGraph <$> rows <* P.eof
     rows = tileY <$> P.endBy1 row P.eol
     row  = tileX <$> P.some (digitToInt <$> P.digitChar)
 
-    tileX :: [Int] -> [Int]
     tileX = concat . take tx . iterate f
-
-    tileY :: [[Int]] -> [[Int]]
     tileY = concat . take ty . iterate (map f)
-
-    f :: [Int] -> [Int]
     f = map ((+ 1) .  (`mod` 9))
     
     toGraph :: [[Int]] -> Graph
@@ -77,22 +73,24 @@ solve2 = print . U.last . sssd 0
 -- Single source shortest distance: uses Dijkstra with a priority search queue
 sssd :: Vertex -> Graph -> U.Vector Int
 sssd source graph = U.create $ do
-  let q0 = Q.fromList $ [ if u /= source then u :-> maxBound else u :-> 0
-                        | u <- [0 .. B.length graph - 1] ]
-  d0 <- M.replicate (B.length graph) maxBound
-  M.write d0 source 0
-  go q0 d0
+  dist0 <- M.generate (B.length graph) gen
+  go dist0 (Q.singleton source 0)
   where
-    go q d
-      | Q.null q = return d
-      | otherwise = do
-          let Just (u :-> _, rest) = Q.minView q
-              nbs = graph B.! u
-          du <- M.read d u
-          prios <- U.forM nbs $ \(v, duv) -> do
-            dv <- M.read d v
-            let dv' = du + duv
-            when (dv' < dv) $ M.write d v dv'
-            return (dv', v)
-          let q' = U.foldr' (uncurry Q.adjust . first min) rest prios
-          go q' d
+    gen v
+      | v == source = 0
+      | otherwise   = maxBound
+
+    go dist q
+      | Q.null q  = return dist
+      | otherwise = go dist =<< relaxAndQueue =<< M.read dist u
+      where
+        Just (u :-> _, rest) = Q.minView q
+        neighbors            = graph B.! u
+        relaxAndQueue du     = U.foldM' (f du) rest neighbors
+
+        f du q' (v, duv) = do
+          dv <- M.read dist v
+          let dv' = du + duv
+          if dv' < dv
+            then M.write dist v dv' $> Q.insert v dv' q'
+            else return q'
