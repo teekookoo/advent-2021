@@ -2,12 +2,12 @@
 
 module Day16 (solve1, solve2) where
 
-import Control.Monad (when)
-import Data.Bifunctor (first, second)
-import Data.Char (digitToInt)
-import Data.Foldable (foldl')
-import Data.Function ((&))
-import Data.Text (Text)
+import Control.Monad        (when)
+import Data.Bifunctor       (first, second)
+import Data.Char            (digitToInt)
+import Data.Foldable        (foldl')
+import Data.Function        ((&))
+import Data.Text            (Text)
 import Text.Megaparsec
 import Text.Megaparsec.Char
 
@@ -35,8 +35,7 @@ type Value   = Int
 
 input :: IO Packet
 input = parse' parser f . toBitStream <$> readFileUtf8' f
-  where
-    f = "app/inputs/input16"
+  where f = "app/inputs/input16"
 
 testInputs :: IO [Packet]
 testInputs = pure $ map (parse' parser "" . toBitStream)
