@@ -1,4 +1,11 @@
-module Input ( Parser, parseFile, parseFile' ) where
+module Input
+  ( Parser
+  , parse'
+  , parseFile
+  , parseFile'
+  , readFileUtf8
+  , readFileUtf8'
+  ) where
 
 import Control.Monad ((<=<))
 import Data.Bifunctor (first)
@@ -11,6 +18,12 @@ import qualified Data.Text.Encoding as E  (decodeUtf8')
 
 type Parser = Parsec Void Text
 
+readFileUtf8 :: FilePath -> IO (Either String Text)
+readFileUtf8 = fmap (first show . E.decodeUtf8') . BS.readFile
+
+readFileUtf8' :: FilePath -> IO Text
+readFileUtf8' = fmap (either error id) . readFileUtf8
+
 {-|
   Take a Megaparsec parser and a path to a file, read the file,
   decode it assuming utf8, and apply the parser.
@@ -21,10 +34,9 @@ type Parser = Parsec Void Text
 parseFile :: Parser a
           -> FilePath
           -> IO (Either String a) 
-parseFile p f = (parseShowError <=< decodeShowError) <$> BS.readFile f
+parseFile p f = (>>= parseShowError) <$> readFileUtf8 f
   where
     parseShowError = first errorBundlePretty . parse p f
-    decodeShowError = first show . E.decodeUtf8'
 
 {-|
   The unsafe variant of parseFile.
@@ -35,3 +47,6 @@ parseFile' :: Parser a
            -> FilePath
            -> IO a
 parseFile' p f = either error id <$> parseFile p f
+
+parse' :: Parser a -> FilePath -> Text -> a
+parse' p f t = either (error . errorBundlePretty) id $ parse p f t
