@@ -63,9 +63,10 @@ testInputs = pure $ map (parse' parser "" . toBitStream)
 parser :: Parser Packet
 parser = packet <* many (single '0') <* optional eol <* eof
   where
-    packet = (&) <$> version <*> (typeID >>= partialPacket)
+    packet  = (&) <$> version <*> (typeID >>= partialPacket)
     version = toInt <$> bits 3
     typeID  = toInt <$> bits 3
+
     bits :: Int -> Parser [Char]
     bits n = count n $ oneOf ['0', '1']
 
